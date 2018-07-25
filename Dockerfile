@@ -27,6 +27,7 @@ RUN apt-get -y update && \
     texlive \
     vim \
     wget \
+    xvfb \
     zlib1g-dev
 
 RUN git clone https://github.com/PRL-PRG/R-dyntrace.git /R-dyntrace && \
