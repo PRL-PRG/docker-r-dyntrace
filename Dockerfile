@@ -24,6 +24,7 @@ RUN apt-get -y update && \
     parallel \
     procps \
     rsync \
+    sudo \
     texlive \
     vim \
     wget \
