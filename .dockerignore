@@ -1,4 +1,10 @@
+.git
 create-cran-mirror.sh
-install-packages.sh
-run.sh
 extract-package-sources.sh
+install-packages.sh
+Makefile
+promisedyntracer
+promise-dyntracing-experiment
+promise-interference
+R-dyntrace
+README.md

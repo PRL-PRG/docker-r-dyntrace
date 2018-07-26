@@ -20,6 +20,7 @@ RUN apt-get -y update && \
     libssl-dev \
     libtiff5-dev \
     libxml2-dev \
+    locales \
     openjdk-8-jdk \
     parallel \
     procps \
@@ -29,12 +30,10 @@ RUN apt-get -y update && \
     vim \
     wget \
     xvfb \
-    zlib1g-dev
+    zlib1g-dev \
+    zsh
 
-RUN git clone https://github.com/PRL-PRG/R-dyntrace.git /R-dyntrace && \
-    cd /R-dyntrace && \
-    ./build && \
-    make install
+RUN locale-gen en_US.UTF-8
 
 ADD entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
