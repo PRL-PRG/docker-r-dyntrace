@@ -1,51 +1,48 @@
 # r-dyntrace
 
-There will be three docker volumes:
+This aims to be a flexible R distribution based on docker that includes all CRAN and BIOC packages.
+Currently it is tested on R 3.5.0 and R-dyntrace.
 
-- `r-cran-mirror` - CRAN mirror populated by `create-cran-mirror.sh` script
-- `r-packages` - installed packages populated by `install-packages.sh` script
-- `r-src-packages` - extracted sources of installed packages populated by `extract-package-sources.sh` script
+## Setup
 
-The `run.sh` mounts all the volume into a disposable container.
+1. choose which R to use and go to the proper directory
 
-## Usage
-
-1. build the image
+2. create the base docker images `prlprg/r=-common`:
 
 ```sh
-$ ./build.sh
+$ make image
 ```
 
-R-dyntrace will be installed in `/`. Sources will be in `/R-dyntrace`.
-
-2. create the `r-cran-mirror` volume, downloading all CRAN packages
+3. create a docker volume `r-cran-mirror` containing a CRAN mirror:
 
 ```sh
-$ ./create-cran-mirror.sh
+$ make cran-mirror
 ```
 
-The mirror will be in `/CRAN/src/contrib`.
-
-3. install packages
+3. create a docker volume `r-cran-lib` containing all CRAN packages installed using the chosen R version:
 
 ```sh
-$ ./install-packages.sh
+$ make cran
 ```
 
-The packages will be installed in `/R/installed`.
-
-4. extract packages
+4. (optional) create a docker volume `r-cran-src-extracted` containing extracted CRAN packages that were installed in `r-cran-lib`:
 
 ```sh
-$ ./extract-package-sources.sh
+$ make cran-sources
 ```
 
-The sources will be in `/R/sources`.
-
-5. run
+5. create a docker volume `r-bioc-lib` containing all BIOC packages installed using the chosen R version:
 
 ```sh
-$ ./run.sh
+$ make bioc
 ```
 
-It will start R-dyntrace by default with `R_LIBS` set to `/R/installed`.
+To run the image you can do:
+
+```sh
+make exec COMMAND="<cmd>"
+make bash
+make zsh
+make r
+make rscript SCRIPT="<script>"
+```
