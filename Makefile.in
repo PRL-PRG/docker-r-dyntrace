@@ -1,14 +1,19 @@
 # *- mode: makefile -*-
 
+# name of the image to build
 IMAGE := prlprg/r-common
+# user/group control in the image
 USERID := $(shell id -u)
 GROUPID := $(shell id -g)
 USER := $(shell id -un)
+GROUP := $(shell id -gn)
 
+# while it looks like a variable it is not, please do not change
 R_HOME := /R
 R_SCRIPT := $(R_HOME)/bin/Rscript
 
-INSTALL_OPTS := c('--example', '--install-tests', '--with-keep.source', '--no-multiarch')
+# extra args passed to the docker run in exec task
+DOCKER_RUN_ARGS :=
 
 # CRAN repository  to use e.g. cloud.r-project.org
 CRAN_MIRROR := mirrors.nic.cz
@@ -27,6 +32,9 @@ CRAN_SRC_EXTRACTED := /CRAN/src-extracted
 BIOC_LIB := /BIOC/lib
 # path where to store downloaded packages (i.e. dest argument to biocLite)
 BIOC_SRC := /BIOC/src
+
+# INSTALL_opts argument to install.packages
+INSTALL_OPTS := c('--example', '--install-tests', '--with-keep.source', '--no-multiarch')
 # Ncpus argument to install.packages
 NCPUS := parallel::detectCores()
 
@@ -88,7 +96,6 @@ cran-sources:
         "
 
 exec:
-	[ -f .zhistory ] || touch .zhistory
 	docker run \
          --rm \
          -ti \
@@ -98,16 +105,10 @@ exec:
          -v r-cran-mirror:$(CRAN_SRC) \
          -v r-cran-lib:$(CRAN_LIB) \
          -v r-cran-src-extracted:$(CRAN_SRC_EXTRACTED) \
-         -v $$(pwd)/.zhistory:$(HOME)/.zhistory \
-         -v $(HOME)/.zpreztorc:$(HOME)/.zpreztorc:ro \
-         -v $(HOME)/.zprezto:$(HOME)/.zprezto:ro \
-         -v $(HOME)/.zprofile:$(HOME)/.zprofile:ro \
-         -v $(HOME)/.zshenv:$(HOME)/.zshenv:ro \
-         -v $(HOME)/.zshrc:$(HOME)/.zshrc:ro \
          -e R_LIBS=/CRAN/lib:/Bioconductor/lib \
          -e R_HOME=/R \
          -e USER=$(USER) \
-         -e GROUP=$(shell id -gn) \
+         -e GROUP=$(GROUP) \
          -e USERID=$(USERID) \
          -e GROUPID=$(GROUPID) \
          -e ROOT="TRUE" \
@@ -115,11 +116,23 @@ exec:
          -e LANGUAGE=$(LANGUAGE) \
          -e LANG=$(LANG) \
          -e LC_ALL=$(LC_ALL) \
+		 $(DOCKER_RUN_ARGS) \
          $(IMAGE) \
          $(COMMAND)
 
-shell:
-	$(MAKE) exec COMMAND=zsh
+zsh:
+	[ -f .zhistory ] || touch .zhistory
+	$(MAKE) exec COMMAND=zsh DOCKER_RUN_ARGS=" \
+         -v $$(pwd)/.zhistory:$(HOME)/.zhistory \
+         -v $(HOME)/.zpreztorc:$(HOME)/.zpreztorc:ro \
+         -v $(HOME)/.zprezto:$(HOME)/.zprezto:ro \
+         -v $(HOME)/.zprofile:$(HOME)/.zprofile:ro \
+         -v $(HOME)/.zshenv:$(HOME)/.zshenv:ro \
+         -v $(HOME)/.zshrc:$(HOME)/.zshrc:ro \
+    "
+
+bash:
+	$(MAKE) exec COMMAND=bash
 
 r:
 	$(MAKE) exec COMMAND=$(R_HOME)/bin/R
