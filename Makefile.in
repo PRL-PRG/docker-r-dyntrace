@@ -45,7 +45,12 @@ INSTALL_OPTS := c('--example', '--install-tests', '--with-keep.source', '--no-mu
 # Ncpus argument to install.packages
 NCPUS := parallel::detectCores()
 
-.PHONY: compile exec image shell r rscript
+VOL_CRAN_LIB := 'r-cran-lib:/CRAN/lib'
+VOL_CRAN_MIRROR := 'r-cran-mirror:/CRAN/src'
+VOL_BIOC_LIB := 'r-bioc-lib:/BIOC/lib'
+VOL_BIOC_SRC := 'r-bioc-src:/BIOC/src'
+
+.PHONY: compile exec image shell r rscript backup restore
 
 image:
 	docker build --rm -t $(IMAGE) ..
@@ -121,11 +126,11 @@ exec:
          --rm \
          -ti \
          -v $$(pwd)/R:/R \
-         -v r-bioc-lib:$(BIOC_LIB) \
-         -v r-bioc-src:$(BIOC_SRC) \
+         -v $(VOL_BIOC_LIB) \
+         -v $(VOL_BIOC_SRC) \
          -v r-bioc-src-extracted:$(BIOC_SRC_EXTRACTED) \
-         -v r-cran-mirror:$(CRAN_SRC) \
-         -v r-cran-lib:$(CRAN_LIB) \
+         -v $(VOL_CRAN_LIB) \
+         -v $(VOL_CRAN_MIRROR) \
          -v r-cran-src-extracted:$(CRAN_SRC_EXTRACTED) \
          -e R_LIBS=$(CRAN_LIB):$(BIOC_LIB) \
          -e R_HOME=/R \
@@ -165,3 +170,22 @@ rscript:
 
 clean:
 	-rm -fr R
+
+backup:
+	-mkdir -p backup
+	for i in $(VOL_CRAN_LIB) $(VOL_CRAN_MIRROR) $(VOL_BIOC_LIB) $(VOL_BIOC_SRC); do \
+      volume=$$( echo "$$i" | sed 's/\(.*\):.*/\1/' ); \
+      path=$$( echo "$$i" | sed 's/.*:\(.*\)/\1/' ); \
+      archive=backup/$$volume.tar; \
+	  docker run --rm -v $$i ubuntu tar -C $$path . -cf - > $$archive; \
+      echo "backed volume $$volume ($$path) into $$archive"; \
+    done
+
+restore:
+	for i in $(VOL_CRAN_LIB) $(VOL_CRAN_MIRROR) $(VOL_BIOC_LIB) $(VOL_BIOC_SRC); do \
+      volume=$$( echo "$$i" | sed 's/\(.*\):.*/\1/' ); \
+      path=$$( echo "$$i" | sed 's/.*:\(.*\)/\1/' ); \
+      archive=backup/$$volume.tar; \
+	  cat $$archive | docker run --rm -i -v $$i ubuntu tar -C $$path -xf; \
+      echo "restored volume $$volume ($$path) from $$archive"; \
+    done
