@@ -16,7 +16,7 @@ useradd -u $USERID -g $GROUPID $USER > /dev/null
 # run with a mount into $HOME then $HOME will have root permissions
 chown $USER:$GROUP $HOME
 chown $USER:$GROUP /CRAN/{lib,src,src-extracted}
-chown $USER:$GROUP /BIOC/{lib,src}
+chown $USER:$GROUP /BIOC/{lib,src,src-extracted}
 sudo -u $USER touch $HOME/.sudo_as_admin_successful
 
 if [ "$ROOT" == "TRUE" ]; then

@@ -32,6 +32,9 @@ CRAN_SRC_EXTRACTED := /CRAN/src-extracted
 BIOC_LIB := /BIOC/lib
 # path where to store downloaded packages (i.e. dest argument to biocLite)
 BIOC_SRC := /BIOC/src
+BIOC_SRC_EXTRACTED := /BIOC/src-extracted
+# which bioc packages to install
+BIOC_PACKAGES := all_group()
 
 # INSTALL_opts argument to install.packages
 INSTALL_OPTS := c('--example', '--install-tests', '--with-keep.source', '--no-multiarch')
@@ -49,13 +52,27 @@ bioc:
           dir.create('$(BIOC_SRC)'); \
           source('https://bioconductor.org/biocLite.R'); \
           biocLite( \
-            lib.loc='$(BIOC_LIB)', \
+            $(BIOC_PACKAGES), \
+            lib='$(BIOC_LIB)', \
             dest='$(BIOC_SRC)', \
             dependencies=TRUE, \
             build_vignettes=TRUE, \
             INSTALL_opts=$(INSTALL_OPTS), \
             Ncpus=$(NCPUS) \
           ) \
+        "
+
+bioc-sources:
+	$(MAKE) rscript \
+		SCRIPT=" \
+          x <- installed.packages('$(BIOC_LIB)'); \
+          paths <- file.path('$(BIOC_SRC)', paste0(x[,1], '_', x[,3], '.tar.gz')); \
+          writeLines(paths[file.exists(paths)], '$(BIOC_SRC_EXTRACTED)/archives.txt') \
+        "
+	$(MAKE) exec \
+		COMMAND=" \
+          parallel --workdir $(BIOC_SRC_EXTRACTED) --bar -a $(BIOC_SRC_EXTRACTED)/archives.txt tar xzf '{}'; \
+          rm -f $(BIOC_SRC_EXTRACTED)/archives.txt \
         "
 
 cran-mirror:
@@ -102,10 +119,11 @@ exec:
          -v $$(pwd)/R:/R \
          -v r-bioc-lib:$(BIOC_LIB) \
          -v r-bioc-src:$(BIOC_SRC) \
+         -v r-bioc-src-extracted:$(BIOC_SRC_EXTRACTED) \
          -v r-cran-mirror:$(CRAN_SRC) \
          -v r-cran-lib:$(CRAN_LIB) \
          -v r-cran-src-extracted:$(CRAN_SRC_EXTRACTED) \
-         -e R_LIBS=/CRAN/lib:/Bioconductor/lib \
+         -e R_LIBS=$(CRAN_LIB):$(BIOC_LIB) \
          -e R_HOME=/R \
          -e USER=$(USER) \
          -e GROUP=$(GROUP) \
