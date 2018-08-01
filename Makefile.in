@@ -12,8 +12,12 @@ GROUP := $(shell id -gn)
 R_HOME := /R
 R_SCRIPT := $(R_HOME)/bin/Rscript
 
-# extra args passed to the docker run in exec task
-DOCKER_RUN_ARGS :=
+# extra args passed to the docker run in exec task - these are to be used from
+# different R Makefiles
+DOCKER_RUN_ARGS ?=
+# extra args passed to the docker run in exec task - these are to be used
+# internally in this Makefiles.in
+DOCKER_RUN_EXTRA_ARGS :=
 
 # CRAN repository  to use e.g. cloud.r-project.org
 CRAN_MIRROR := mirrors.nic.cz
@@ -135,12 +139,13 @@ exec:
          -e LANG=$(LANG) \
          -e LC_ALL=$(LC_ALL) \
 		 $(DOCKER_RUN_ARGS) \
+		 $(DOCKER_RUN_EXTRA_ARGS) \
          $(IMAGE) \
          $(COMMAND)
 
 zsh:
 	[ -f .zhistory ] || touch .zhistory
-	$(MAKE) exec COMMAND=zsh DOCKER_RUN_ARGS=" \
+	$(MAKE) exec COMMAND=zsh DOCKER_RUN_EXTRA_ARGS=" \
          -v $$(pwd)/.zhistory:$(HOME)/.zhistory \
          -v $(HOME)/.zpreztorc:$(HOME)/.zpreztorc:ro \
          -v $(HOME)/.zprezto:$(HOME)/.zprezto:ro \
