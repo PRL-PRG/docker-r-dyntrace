@@ -22,11 +22,11 @@ RUN apt-get -y update && \
     libxml2-dev \
     locales \
     openjdk-8-jdk \
-    parallel \
     procps \
     rsync \
     sudo \
     texlive \
+    tzdata \
     vim \
     wget \
     xvfb \
