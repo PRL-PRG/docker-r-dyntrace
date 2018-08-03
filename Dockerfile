@@ -33,6 +33,8 @@ RUN apt-get -y update && \
     zlib1g-dev \
     zsh
 
+# install latest GNU parallel (ubuntu has an old version)
+RUN curl -L https://bit.ly/install-gnu-parallel | sh -x 
 RUN locale-gen en_US.UTF-8
 
 ADD entrypoint.sh /entrypoint.sh
