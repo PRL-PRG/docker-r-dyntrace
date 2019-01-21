@@ -170,6 +170,9 @@ zsh:
 bash:
 	@$(MAKE) exec COMMAND="bash $(ARGS)"
 
+fish:
+	@$(MAKE) exec COMMAND="fish $(ARGS)"
+
 r:
 	@$(MAKE) exec COMMAND="$(R_HOME)/bin/R $(ARGS)"
 

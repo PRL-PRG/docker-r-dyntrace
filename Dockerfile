@@ -5,6 +5,7 @@ RUN apt-get -y update && \
     build-essential \
     cloc \
     curl \
+    fish \
     gfortran \
     git \
     libbz2-dev \
