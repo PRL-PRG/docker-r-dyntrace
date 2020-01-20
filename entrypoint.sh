@@ -15,8 +15,8 @@ useradd -u $USERID -g $GROUPID $USER > /dev/null
 # one would think that it can be done with useradd -m, but if the container is
 # run with a mount into $HOME then $HOME will have root permissions
 chown $USER:$GROUP $HOME
-chown $USER:$GROUP /CRAN/{lib,src,src-extracted}
-chown $USER:$GROUP /BIOC/{lib,src,src-extracted}
+chown $USER:$GROUP /CRAN-library
+chown $USER:$GROUP /CRAN
 sudo -u $USER touch $HOME/.sudo_as_admin_successful
 
 if [ "$ROOT" == "TRUE" ]; then

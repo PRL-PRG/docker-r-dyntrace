@@ -1,12 +1,3 @@
 .git
-.zignore
-create-cran-mirror.sh
-extract-package-sources.sh
-install-packages.sh
 Makefile
-promisedyntracer
-promise-dyntracing-experiment
-promise-interference
-R-dyntrace
-R-3.5.0
 README.md
