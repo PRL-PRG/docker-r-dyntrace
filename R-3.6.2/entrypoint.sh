@@ -22,11 +22,15 @@ sudo -u $USER touch $HOME/.sudo_as_admin_successful
 if [ "$ROOT" == "TRUE" ]; then
     adduser $USER sudo > /dev/null
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-    echo 'Defaults env_keep += "R_LIBS R_DYNTRACE_HOME"' >> /etc/sudoers
 fi
+
+# R is installed in /usr/local
+# because of some security policy, it is not possible to set PATH here for the
+# user the sudo will use.
+# export PATH=$PATH:$R_HOME/bin
 
 # start fake X server
 nohup Xvfb :6 -screen 0 1280x1024x24 > /X.log 2>&1 &
 export DISPLAY=:6
 
-sudo -E -i -u $USER "$@"
+sudo -E -s -u $USER "$@"

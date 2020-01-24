@@ -36,32 +36,33 @@ INSTALL_OPTS := c('--example', '--install-tests', '--with-keep.source', '--no-mu
 # Ncpus argument to install.packages
 NCPUS := parallel::detectCores()
 
+# volume where the installed packages will be placed
 VOL_CRAN_LIB := 'r-packages-$(R_VERSION):$(CRAN_LIB)'
+# volume with the package sources
 VOL_CRAN_MIRROR := 'r-cran-mirror:/CRAN'
 
-# the directory where to put scripts
-SCRIPTS_DIR := bin
-# each of the scripts is basically the corresponding makefile task
-SCRIPTS := $(SCRIPTS_DIR)/r.sh $(SCRIPTS_DIR)/rscript.sh $(SCRIPTS_DIR)/bash.sh $(SCRIPTS_DIR)/zsh.sh
-
 DOCKER_RUN_ARGS :=
+
+# directory into which the current directory will be mounted
+# it will be also set as the current working directory
+IMAGE_WORKING_DIR := /home/$(USER)/work
 
 # while it looks like a variable it is not, please do not change
 R_HOME := /R
 
 .PHONY: \
-	bash \
-	compile \
-	cran \
+	clean
 	cran-mirror \
 	cran-install-packages \
 	cran-extract-packages \
 	exec \
+	bash \
 	fish \
-	scripts \
-	r \
-	rscript \
-	zsh
+	parallel \
+	R \
+	Rscript \
+	zsh \
+	scripts
 
 # download all CRAN packages using rsync
 # they will be placed into a volume $(VOL_CRAN_MIRROR)
@@ -111,9 +112,9 @@ exec:
          -ti \
          -v $(VOL_CRAN_LIB) \
          -v $(VOL_CRAN_MIRROR) \
-         -v "$$(pwd):/home/$(USER)/work" \
+         -v "$$(pwd):$(IMAGE_WORKING_DIR)" \
+         -w $(IMAGE_WORKING_DIR) \
          -e R_LIBS=$(CRAN_LIB) \
-         -e R_HOME=/R \
          -e USER=$(USER) \
          -e GROUP=$(GROUP) \
          -e USERID=$(USERID) \
@@ -127,22 +128,14 @@ exec:
          $(IMAGE) \
          $(COMMAND)
 
-zsh:
-	[ -f .zhistory ] || touch .zhistory
-	@$(MAKE) exec COMMAND="zsh $(ARGS)" DOCKER_RUN_ARGS=" \
-         -v $$(pwd)/.zhistory:$(HOME)/.zhistory \
-         -v $(HOME)/.zpreztorc:$(HOME)/.zpreztorc:ro \
-         -v $(HOME)/.zprezto:$(HOME)/.zprezto:ro \
-         -v $(HOME)/.zprofile:$(HOME)/.zprofile:ro \
-         -v $(HOME)/.zshenv:$(HOME)/.zshenv:ro \
-         -v $(HOME)/.zshrc:$(HOME)/.zshrc:ro \
-    "
-
 bash:
 	@$(MAKE) exec COMMAND="bash $(ARGS)"
 
 fish:
 	@$(MAKE) exec COMMAND="fish $(ARGS)"
+
+parallel:
+	@$(MAKE) exec COMMAND="parallel $(ARGS)"
 
 R:
 	@$(MAKE) exec COMMAND="$(R_HOME)/bin/R $(ARGS)"
@@ -154,20 +147,37 @@ Rscript:
 		@$(MAKE) exec COMMAND="$(R_HOME)/bin/Rscript -e \"$(SCRIPT)\""
     endif
 
+sh:
+	@$(MAKE) exec COMMAND="sh $(ARGS)"
+
+zsh:
+	[ -f .zhistory ] || touch .zhistory
+	@$(MAKE) exec COMMAND="zsh $(ARGS)" DOCKER_RUN_ARGS=" \
+         -v $$(pwd)/.zhistory:$(HOME)/.zhistory \
+         -v $(HOME)/.zpreztorc:$(HOME)/.zpreztorc:ro \
+         -v $(HOME)/.zprezto:$(HOME)/.zprezto:ro \
+         -v $(HOME)/.zprofile:$(HOME)/.zprofile:ro \
+         -v $(HOME)/.zshenv:$(HOME)/.zshenv:ro \
+         -v $(HOME)/.zshrc:$(HOME)/.zshrc:ro \
+    "
+
+
 # the directory where to put scripts
 SCRIPTS_DIR := bin
 # each of the scripts is basically the corresponding makefile task
 SCRIPTS := \
 	$(SCRIPTS_DIR)/bash \
 	$(SCRIPTS_DIR)/fish \
+	$(SCRIPTS_DIR)/parallel \
 	$(SCRIPTS_DIR)/R \
 	$(SCRIPTS_DIR)/Rscript \
+	$(SCRIPTS_DIR)/sh \
 	$(SCRIPTS_DIR)/zsh
 
 $(SCRIPTS_DIR):
-	mkdir $(SCRIPTS_DIR)
+	mkdir -p $(SCRIPTS_DIR)
 
-$(SCRIPTS_DIR)/%.sh: $(SCRIPTS_DIR)
+$(SCRIPTS_DIR)/%: $(SCRIPTS_DIR)
 	echo -e "#!/bin/sh\n" > $@
 # this is stupid, but I did not find a way how to escape $@ passed into a make task
 	make -sn $(shell basename $(@:.sh=)) ARGS='\"~@\"' | sed -n '/docker run/,$$p' >> $@
