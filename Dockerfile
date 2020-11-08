@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-# configure timeze
+# configure timezone
 ARG TIMEZONE=Europe/Prague
 RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE > /etc/timezone
 
