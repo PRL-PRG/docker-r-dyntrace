@@ -1,7 +1,7 @@
 VERSION    ?= r-4.0.2
 IMAGE_NAME := prlprg/r-dyntrace:$(VERSION)
 
-.PHONY: image image-upload
+.PHONY: image upload
 
 all: image
 
@@ -12,5 +12,5 @@ image:
     -t $(IMAGE_NAME) \
     .
 
-image-upload: image
+upload: image
 	docker push $(IMAGE_NAME)
