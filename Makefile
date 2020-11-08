@@ -1,5 +1,5 @@
-IMAGE_NAME := prlprg/r-dyntrace
 VERSION    ?= r-4.0.2
+IMAGE_NAME := prlprg/r-dyntrace:$(VERSION)
 
 .PHONY: image image-upload
 
