@@ -86,12 +86,3 @@ RUN git clone https://github.com/PRL-PRG/R-dyntrace "$R_DIR" && \
   ./build
 
 env PATH=$R_DIR/bin:$PATH
-
-# latest GNU parallel
-RUN mkdir parallel && \
-    cd parallel && \
-    curl http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2 | tar -xjf- --strip 1 && \
-    ./configure && \
-    make install && \
-    mkdir /root/.parallel && \
-    touch /root/.parallel/will-cite
