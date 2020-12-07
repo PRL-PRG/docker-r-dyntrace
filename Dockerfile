@@ -31,8 +31,11 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libjpeg-dev \
       liblzma-dev \
       libmagick++-dev \
+      libmariadb-client-lgpl-dev \
       libmysqlclient-dev \
       libmpfr-dev \
+      libnlopt-dev \
+      libopenblas-dev \
       libpcre2-dev \
       libpcre3-dev \
       libpng-dev \
