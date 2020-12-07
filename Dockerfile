@@ -73,12 +73,17 @@ RUN DEBIAN_FRONTEND=noninteractive \
       xvfb \
       zlib1g-dev
 
-env R_DIR="/R/R-dyntrace" \
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8
+
+ENV R_DIR="/R/R-dyntrace" \
     R_KEEP_PKG_SOURCE=1 \
     R_ENABLE_JIT=0 \
     R_COMPILE_PKGS=0 \
     R_DISABLE_BYTECODE=1 \
-    OMP_NUM_THREADS=1
+    OMP_NUM_THREADS=1 \
+    LANG=en_US.UTF-8
 
 # RDT
 ARG VERSION=r-4.0.2
@@ -88,4 +93,4 @@ RUN git clone https://github.com/PRL-PRG/R-dyntrace "$R_DIR" && \
   git checkout "$VERSION" && \
   ./build
 
-env PATH=$R_DIR/bin:$PATH
+ENV PATH=$R_DIR/bin:$PATH
