@@ -53,6 +53,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libxml2-dev \
       locales \
       openjdk-8-jdk \
+      pandoc \
       procps \
       rsync \
       sudo \
