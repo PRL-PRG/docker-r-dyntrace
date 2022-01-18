@@ -6,6 +6,7 @@ ARG TZ=Europe/Prague
 # common devel dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -yqq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yqq \
+      bear \
       build-essential \
       cloc \
       curl \
@@ -99,6 +100,35 @@ ARG VERSION=r-4.0.2
 RUN git clone https://github.com/PRL-PRG/R-dyntrace "$R_DIR" && \
   cd "$R_DIR" && \
   git checkout "$VERSION" && \
-  ./build
+  CFLAGS="-g3 -O2 -ggdb3" \
+  CPPFLAGS="-g3 -O2 -ggdb3" \
+  CXXFLAGS="-g3 -O2 -ggdb3" \
+  CXX14FLAGS="-g3 -O2 -ggdb3" \
+  CXX17FLAGS="-g3 -O2 -ggdb3" \
+  CXX20FLAGS="-g3 -O2 -ggdb3" \
+  R_KEEP_PKG_SOURCE=yes \
+  ./configure --with-blas --with-lapack --without-ICU --with-x \
+            --with-tcltk --without-aqua --with-recommended-packages \
+            --without-internal-tzcode --with-included-gettext \
+            --disable-byte-compiled-packages --enable-dyntrace && \
+  bear make -j
+
+ENV R_DIR_DBG=$R_DIR-dbg
+
+RUN cp -r "$R_DIR" "$R_DIR_DBG" && \
+  cd "$R_DIR_DBG" && \
+  CFLAGS="-g3 -O0 -ggdb3" \
+  CPPFLAGS="-g3 -O0 -ggdb3" \
+  CXXFLAGS="-g3 -O0 -ggdb3" \
+  CXX14FLAGS="-g3 -O0 -ggdb3" \
+  CXX17FLAGS="-g3 -O0 -ggdb3" \
+  CXX20FLAGS="-g3 -O0 -ggdb3" \
+  R_KEEP_PKG_SOURCE=yes \
+  make distclean && \
+  ./configure --with-blas --with-lapack --without-ICU --with-x \
+            --with-tcltk --without-aqua --with-recommended-packages \
+            --without-internal-tzcode --with-included-gettext \
+            --disable-byte-compiled-packages --enable-dyntrace && \
+  bear make -j
 
 ENV PATH=$R_DIR/bin:$PATH
